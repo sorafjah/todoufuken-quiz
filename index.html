@@ -330,17 +330,17 @@
 <!-- ====== 画面表示 ====== -->
 <div class="screen-only">
   <div class="screen-header">
-    <h1><ruby>都道府県<rt>とどうふけん</rt></ruby>クイズ</h1>
+    <h1>都道府県クイズ</h1>
     <p>日本の都道府県について学ぼう！</p>
   </div>
 
   <div class="controls">
     <label>
-      <ruby>問題数<rt>もんだいすう</rt></ruby>
+      問題数
       <input type="number" id="qcount" value="12" min="4" max="47" style="width:60px">
     </label>
     <label>
-      <ruby>種類<rt>しゅるい</rt></ruby>
+      種類
       <select id="qtype">
         <option value="mix">まぜこぜ</option>
         <option value="capital">県庁所在地</option>
@@ -349,7 +349,7 @@
       </select>
     </label>
     <label>
-      <ruby>形式<rt>けいしき</rt></ruby>
+      形式
       <select id="qformat">
         <option value="choice">4択</option>
         <option value="fill">記述</option>
@@ -443,19 +443,19 @@ function makeQuestion(pref, type, format, idx) {
   let qText = '', answer = '', ruby = '';
 
   if (type === 'capital') {
-    qText = `<ruby>${pref.name}<rt>${pref.ruby}</rt></ruby>の<ruby>県庁所在地<rt>けんちょうしょざいち</rt></ruby>はどこですか？`;
+    qText = `${pref.name}の県庁所在地はどこですか？`;
     answer = pref.capital;
     ruby   = pref.capRuby;
   } else if (type === 'region') {
-    qText = `<ruby>${pref.name}<rt>${pref.ruby}</rt></ruby>はどの<ruby>地方<rt>ちほう</rt></ruby>に<ruby>属<rt>ぞく</rt></ruby>していますか？`;
+    qText = `${pref.name}はどの地方に属していますか？`;
     answer = pref.region + '地方';
     ruby   = '';
   } else if (type === 'feature') {
-    qText = `「${pref.feature}」といえばどこの<ruby>都道府県<rt>とどうふけん</rt></ruby>ですか？`;
+    qText = `「${pref.feature}」といえばどこの都道府県ですか？`;
     answer = pref.name;
     ruby   = pref.ruby;
   } else { // pref name from capital
-    qText = `<ruby>県庁所在地<rt>けんちょうしょざいち</rt></ruby>が「<ruby>${pref.capital}<rt>${pref.capRuby}</rt></ruby>」の<ruby>都道府県<rt>とどうふけん</rt></ruby>はどこですか？`;
+    qText = `県庁所在地が「${pref.capital}」の都道府県はどこですか？`;
     answer = pref.name;
     ruby   = pref.ruby;
   }
@@ -520,7 +520,6 @@ function renderScreen() {
 
     let inner = `
       <div class="q-number">Q${q.idx}</div>
-      <div class="q-type-badge">${typeLabel(q.type)}</div>
       <div class="q-text">${q.qText}</div>
     `;
 
@@ -535,10 +534,10 @@ function renderScreen() {
     } else {
       inner += `
         <div class="fill-answer">
-          <div><ruby>答<rt>こた</rt></ruby>え：</div>
+          <div>答え：</div>
           <input type="text" id="fill${q.idx}" placeholder="ここに入力...">
           <br>
-          <button class="check-btn" onclick="checkFill(${q.idx})">✔ <ruby>確認<rt>かくにん</rt></ruby></button>
+          <button class="check-btn" onclick="checkFill(${q.idx})">✔ 確認</button>
           <div class="answer-msg" id="msg${q.idx}"></div>
         </div>`;
     }
@@ -584,7 +583,7 @@ function checkFill(qidx) {
     msg.className = 'answer-msg ok';
     correct++;
   } else {
-    msg.innerHTML = `❌ <ruby>不正解<rt>ふせいかい</rt></ruby>。<ruby>答<rt>こた</rt></ruby>え：${q.ruby ? `<ruby>${q.answer}<rt>${q.ruby}</rt></ruby>` : q.answer}`;
+    msg.innerHTML = `❌ 不正解。答え：${q.answer}`;
     msg.className = 'answer-msg ng';
   }
   document.getElementById('fill' + qidx).disabled = true;
@@ -618,13 +617,13 @@ function renderPrint() {
 
     const title = document.createElement('div');
     title.className = 'print-title';
-    title.innerHTML = '<ruby>都道府県<rt>とどうふけん</rt></ruby>クイズ';
+    title.innerHTML = '都道府県クイズ';
     page.appendChild(title);
 
     const meta = document.createElement('div');
     meta.className = 'print-meta';
     meta.innerHTML = `
-      <span><ruby>名前<rt>なまえ</rt></ruby>：<span class="name-box">　　　　　　　</span></span>
+      <span>名前：<span class="name-box">　　　　　　　</span></span>
       <span>${p + 1} / ${pages} ページ</span>
     `;
     page.appendChild(meta);
@@ -640,7 +639,6 @@ function renderPrint() {
       let html = `
         <div class="pq-header">
           <span class="pq-num">Q${q.idx}</span>
-          <span class="pq-type">${typeLabel(q.type)}</span>
         </div>
         <div class="pq-text">${q.qText}</div>
       `;
@@ -670,12 +668,12 @@ function renderPrint() {
 
   const ansTitle = document.createElement('div');
   ansTitle.className = 'print-title';
-  ansTitle.innerHTML = '<ruby>答え合わせ<rt>こたえあわせ</rt></ruby>';
+  ansTitle.innerHTML = '答え合わせ';
   ansPage.appendChild(ansTitle);
 
   const ansMeta = document.createElement('div');
   ansMeta.className = 'print-meta';
-  ansMeta.innerHTML = `<span></span><span><ruby>答え合わせ<rt>こたえあわせ</rt></ruby>ページ</span>`;
+  ansMeta.innerHTML = `<span></span><span>答え合わせページ</span>`;
   ansPage.appendChild(ansMeta);
 
   const ansGrid = document.createElement('div');
@@ -689,11 +687,10 @@ function renderPrint() {
       let ansHtml = `
         <div class="pq-header">
           <span class="pq-num">Q${q.idx}</span>
-          <span class="pq-type">${typeLabel(q.type)}</span>
         </div>
         <div class="pq-text" style="font-size:9pt">${q.qText}</div>
-        <div class="pq-answer-label"><ruby>答え<rt>こたえ</rt></ruby>：</div>
-        <div class="pq-answer">${q.ruby ? `<ruby>${q.answer}<rt>${q.ruby}</rt></ruby>` : q.answer}</div>
+        <div class="pq-answer-label">答え：</div>
+        <div class="pq-answer">${q.answer}</div>
       `;
       if (q.format === 'choice') {
         const marks = ['ア','イ','ウ','エ'];
