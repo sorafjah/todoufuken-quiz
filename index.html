@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>都道府県クイズ</title>
+<link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=BIZ+UDGothic:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary: #1a4f8a;
+    --accent: #e85d26;
+    --bg: #f5f0e8;
+    --card: #ffffff;
+    --border: #c8b89a;
+    --text: #1a1a1a;
+    --light: #6b7280;
+    --correct: #16a34a;
+    --wrong: #dc2626;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'BIZ UDPGothic', 'BIZ UDGothic', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ===== 画面表示用 ===== */
+  @media screen {
+    body { padding: 16px; }
+
+    .screen-header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .screen-header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--primary);
+      border-bottom: 4px solid var(--accent);
+      display: inline-block;
+      padding-bottom: 4px;
+    }
+    .screen-header p {
+      color: var(--light);
+      margin-top: 6px;
+      font-size: 0.9rem;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+    .controls label {
+      font-size: 0.85rem;
+      color: var(--light);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .controls select, .controls input[type=number] {
+      font-family: inherit;
+      font-size: 0.9rem;
+      padding: 6px 10px;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      background: white;
+    }
+    .btn {
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 700;
+      padding: 8px 22px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: opacity .15s;
+    }
+    .btn:hover { opacity: .85; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-accent  { background: var(--accent);  color: white; }
+    .btn-gray    { background: #9ca3af; color: white; }
+    .btn-print   { background: #374151; color: white; }
+
+    .quiz-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .quiz-card {
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      position: relative;
+    }
+
+    .q-number {
+      position: absolute;
+      top: 12px;
+      left: 14px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: white;
+      background: var(--primary);
+      border-radius: 4px;
+      padding: 2px 8px;
+    }
+
+    .q-type-badge {
+      position: absolute;
+      top: 12px;
+      right: 14px;
+      font-size: 0.72rem;
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      border-radius: 4px;
+      padding: 1px 6px;
+    }
+
+    .q-text {
+      margin-top: 30px;
+      font-size: 1rem;
+      font-weight: 700;
+      line-height: 1.7;
+      min-height: 48px;
+    }
+
+    .choices {
+      margin-top: 12px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .choice-btn {
+      font-family: inherit;
+      font-size: 0.88rem;
+      padding: 8px 10px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      background: #fafaf8;
+      cursor: pointer;
+      text-align: center;
+      line-height: 1.5;
+      transition: background .12s, border-color .12s;
+    }
+    .choice-btn:hover:not(:disabled) { background: #e8f0fb; border-color: var(--primary); }
+    .choice-btn.correct { background: #dcfce7; border-color: var(--correct); color: var(--correct); font-weight: 700; }
+    .choice-btn.wrong   { background: #fee2e2; border-color: var(--wrong);   color: var(--wrong); }
+    .choice-btn.reveal  { background: #dcfce7; border-color: var(--correct); color: var(--correct); font-weight: 700; }
+
+    .fill-answer {
+      margin-top: 10px;
+      font-size: 0.88rem;
+    }
+    .fill-answer input {
+      font-family: inherit;
+      font-size: 0.95rem;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 10px;
+      width: 100%;
+      margin-top: 4px;
+    }
+    .check-btn {
+      margin-top: 8px;
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 700;
+      padding: 6px 14px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .answer-msg {
+      margin-top: 6px;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+    .answer-msg.ok { color: var(--correct); }
+    .answer-msg.ng { color: var(--wrong); }
+
+    .score-bar {
+      text-align: center;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 16px;
+    }
+
+    .print-area { display: none; }
+  }
+
+  /* ===== 印刷用 ===== */
+  @media print {
+    .screen-only { display: none !important; }
+
+    body {
+      background: white;
+      font-family: 'BIZ UDPGothic', 'BIZ UDGothic', sans-serif;
+      color: black;
+    }
+
+    .print-area { display: block; }
+
+    .print-page {
+      width: 210mm;
+      min-height: 297mm;
+      padding: 15mm 15mm 12mm;
+      page-break-after: always;
+      position: relative;
+    }
+    .print-page:last-child { page-break-after: auto; }
+
+    .print-title {
+      text-align: center;
+      font-size: 20pt;
+      font-weight: 700;
+      border-bottom: 3pt solid black;
+      padding-bottom: 4pt;
+      margin-bottom: 6pt;
+    }
+    .print-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 9pt;
+      margin-bottom: 12pt;
+      color: #444;
+    }
+    .name-box {
+      border: 1.5pt solid black;
+      padding: 4pt 40pt 4pt 8pt;
+      font-size: 10pt;
+    }
+
+    .print-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10pt;
+    }
+
+    .print-card {
+      border: 1.5pt solid #555;
+      border-radius: 4pt;
+      padding: 8pt 10pt;
+      page-break-inside: avoid;
+    }
+
+    .pq-header {
+      display: flex;
+      align-items: center;
+      gap: 6pt;
+      margin-bottom: 4pt;
+    }
+    .pq-num {
+      font-weight: 700;
+      font-size: 10pt;
+      background: black;
+      color: white;
+      padding: 1pt 5pt;
+      border-radius: 2pt;
+    }
+    .pq-type {
+      font-size: 8pt;
+      border: 1pt solid #555;
+      padding: 0 4pt;
+      border-radius: 2pt;
+    }
+    .pq-text {
+      font-size: 10.5pt;
+      font-weight: 700;
+      line-height: 1.7;
+      margin-bottom: 5pt;
+    }
+    .pq-choices {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4pt;
+    }
+    .pq-choice {
+      font-size: 9.5pt;
+      border: 1pt solid #888;
+      border-radius: 3pt;
+      padding: 3pt 6pt;
+      text-align: center;
+      line-height: 1.5;
+    }
+    .pq-fill-line {
+      border-bottom: 1.5pt solid black;
+      height: 16pt;
+      margin-top: 4pt;
+      width: 100%;
+    }
+
+    /* 答え合わせページ */
+    .answer-page .print-grid .print-card {
+      background: #f8f8f8;
+    }
+    .pq-answer {
+      font-size: 9.5pt;
+      font-weight: 700;
+      color: #222;
+      margin-top: 3pt;
+    }
+    .pq-answer-label {
+      font-size: 8pt;
+      color: #555;
+    }
+
+    @page {
+      size: A4;
+      margin: 0;
+    }
+  }
+
+  ruby rt { font-size: 0.55em; }
+</style>
+</head>
+<body>
+
+<!-- ====== 画面表示 ====== -->
+<div class="screen-only">
+  <div class="screen-header">
+    <h1><ruby>都道府県<rt>とどうふけん</rt></ruby>クイズ</h1>
+    <p>日本の都道府県について学ぼう！</p>
+  </div>
+
+  <div class="controls">
+    <label>
+      <ruby>問題数<rt>もんだいすう</rt></ruby>
+      <input type="number" id="qcount" value="12" min="4" max="47" style="width:60px">
+    </label>
+    <label>
+      <ruby>種類<rt>しゅるい</rt></ruby>
+      <select id="qtype">
+        <option value="mix">まぜこぜ</option>
+        <option value="capital">県庁所在地</option>
+        <option value="region">地方</option>
+        <option value="feature">特徴</option>
+
+      </select>
+    </label>
+    <label>
+      <ruby>形式<rt>けいしき</rt></ruby>
+      <select id="qformat">
+        <option value="choice">4択</option>
+        <option value="fill">記述</option>
+        <option value="mix">まぜこぜ</option>
+      </select>
+    </label>
+    <button class="btn btn-primary" onclick="generateQuiz()">🎲 クイズをつくる</button>
+    <button class="btn btn-print" onclick="window.print()">🖨️ 印刷</button>
+  </div>
+
+  <div class="score-bar" id="scoreBar" style="display:none"></div>
+  <div class="quiz-grid" id="quizGrid"></div>
+</div>
+
+<!-- ====== 印刷用エリア（JSで生成） ====== -->
+<div class="print-area" id="printArea"></div>
+
+<script>
+// =============================================
+// データ
+// =============================================
+const PREFS = [
+  {name:'北海道',ruby:'ほっかいどう',capital:'札幌市',capRuby:'さっぽろし',region:'北海道',feature:'面積が日本一大きい都道府県'},
+  {name:'青森県',ruby:'あおもりけん',capital:'青森市',capRuby:'あおもりし',region:'東北',feature:'りんごの生産量が日本一'},
+  {name:'岩手県',ruby:'いわてけん',capital:'盛岡市',capRuby:'もりおかし',region:'東北',feature:'面積が都道府県で2番目に大きい'},
+  {name:'宮城県',ruby:'みやぎけん',capital:'仙台市',capRuby:'せんだいし',region:'東北',feature:'仙台七夕まつりが有名'},
+  {name:'秋田県',ruby:'あきたけん',capital:'秋田市',capRuby:'あきたし',region:'東北',feature:'きりたんぽ鍋が有名な食べ物'},
+  {name:'山形県',ruby:'やまがたけん',capital:'山形市',capRuby:'やまがたし',region:'東北',feature:'さくらんぼの生産量が日本一'},
+  {name:'福島県',ruby:'ふくしまけん',capital:'福島市',capRuby:'ふくしまし',region:'東北',feature:'面積が都道府県で3番目に大きい'},
+  {name:'茨城県',ruby:'いばらきけん',capital:'水戸市',capRuby:'みとし',region:'関東',feature:'納豆の消費量が日本一'},
+  {name:'栃木県',ruby:'とちぎけん',capital:'宇都宮市',capRuby:'うつのみやし',region:'関東',feature:'餃子の消費量が日本トップクラス'},
+  {name:'群馬県',ruby:'ぐんまけん',capital:'前橋市',capRuby:'まえばしし',region:'関東',feature:'こんにゃくの生産量が日本一'},
+  {name:'埼玉県',ruby:'さいたまけん',capital:'さいたま市',capRuby:'さいたまし',region:'関東',feature:'海のない内陸の都市'},
+  {name:'千葉県',ruby:'ちばけん',capital:'千葉市',capRuby:'ちばし',region:'関東',feature:'落花生の生産量が日本一'},
+  {name:'東京都',ruby:'とうきょうと',capital:'新宿区（都庁）',capRuby:'しんじゅくく',region:'関東',feature:'日本の首都'},
+  {name:'神奈川県',ruby:'かながわけん',capital:'横浜市',capRuby:'よこはまし',region:'関東',feature:'横浜中華街が有名'},
+  {name:'新潟県',ruby:'にいがたけん',capital:'新潟市',capRuby:'にいがたし',region:'中部',feature:'コシヒカリなどお米の生産量が日本一'},
+  {name:'富山県',ruby:'とやまけん',capital:'富山市',capRuby:'とやまし',region:'中部',feature:'ホタルイカの水揚げが有名'},
+  {name:'石川県',ruby:'いしかわけん',capital:'金沢市',capRuby:'かなざわし',region:'中部',feature:'金沢の兼六園が日本三名園の一つ'},
+  {name:'福井県',ruby:'ふくいけん',capital:'福井市',capRuby:'ふくいし',region:'中部',feature:'めがねフレームの生産量が日本一'},
+  {name:'山梨県',ruby:'やまなしけん',capital:'甲府市',capRuby:'こうふし',region:'中部',feature:'ぶどうの生産量が日本一'},
+  {name:'長野県',ruby:'ながのけん',capital:'長野市',capRuby:'ながのし',region:'中部',feature:'8つの県に囲まれた内陸の県'},
+  {name:'岐阜県',ruby:'ぎふけん',capital:'岐阜市',capRuby:'ぎふし',region:'中部',feature:'白川郷の合掌造りが有名'},
+  {name:'静岡県',ruby:'しずおかけん',capital:'静岡市',capRuby:'しずおかし',region:'中部',feature:'お茶の生産量が日本一'},
+  {name:'愛知県',ruby:'あいちけん',capital:'名古屋市',capRuby:'なごやし',region:'中部',feature:'自動車工業がさかんな県'},
+  {name:'三重県',ruby:'みえけん',capital:'津市',capRuby:'つし',region:'近畿',feature:'伊勢神宮がある県'},
+  {name:'滋賀県',ruby:'しがけん',capital:'大津市',capRuby:'おおつし',region:'近畿',feature:'日本最大の湖・琵琶湖がある'},
+  {name:'京都府',ruby:'きょうとふ',capital:'京都市',capRuby:'きょうとし',region:'近畿',feature:'金閣寺や清水寺などの寺社が多い'},
+  {name:'大阪府',ruby:'おおさかふ',capital:'大阪市',capRuby:'おおさかし',region:'近畿',feature:'「天下の台所」と呼ばれる経済都市'},
+  {name:'兵庫県',ruby:'ひょうごけん',capital:'神戸市',capRuby:'こうべし',region:'近畿',feature:'神戸港が有名な国際都市'},
+  {name:'奈良県',ruby:'ならけん',capital:'奈良市',capRuby:'ならし',region:'近畿',feature:'東大寺の大仏が有名'},
+  {name:'和歌山県',ruby:'わかやまけん',capital:'和歌山市',capRuby:'わかやまし',region:'近畿',feature:'みかんの生産量が日本一'},
+  {name:'鳥取県',ruby:'とっとりけん',capital:'鳥取市',capRuby:'とっとりし',region:'中国',feature:'鳥取砂丘が有名'},
+  {name:'島根県',ruby:'しまねけん',capital:'松江市',capRuby:'まつえし',region:'中国',feature:'出雲大社がある'},
+  {name:'岡山県',ruby:'おかやまけん',capital:'岡山市',capRuby:'おかやまし',region:'中国',feature:'桃太郎伝説の地、きびだんごが有名'},
+  {name:'広島県',ruby:'ひろしまけん',capital:'広島市',capRuby:'ひろしまし',region:'中国',feature:'原爆ドームと平和記念公園がある'},
+  {name:'山口県',ruby:'やまぐちけん',capital:'山口市',capRuby:'やまぐちし',region:'中国',feature:'本州最西端の県'},
+  {name:'徳島県',ruby:'とくしまけん',capital:'徳島市',capRuby:'とくしまし',region:'四国',feature:'阿波踊りが有名な祭り'},
+  {name:'香川県',ruby:'かがわけん',capital:'高松市',capRuby:'たかまつし',region:'四国',feature:'日本一小さい県、うどんが有名'},
+  {name:'愛媛県',ruby:'えひめけん',capital:'松山市',capRuby:'まつやまし',region:'四国',feature:'みかんの生産量が多い'},
+  {name:'高知県',ruby:'こうちけん',capital:'高知市',capRuby:'こうちし',region:'四国',feature:'坂本龍馬の出身地'},
+  {name:'福岡県',ruby:'ふくおかけん',capital:'福岡市',capRuby:'ふくおかし',region:'九州',feature:'九州最大の都市・福岡市がある'},
+  {name:'佐賀県',ruby:'さがけん',capital:'佐賀市',capRuby:'さがし',region:'九州',feature:'有田焼などの陶磁器が有名'},
+  {name:'長崎県',ruby:'ながさきけん',capital:'長崎市',capRuby:'ながさきし',region:'九州',feature:'島の数が日本一多い県'},
+  {name:'熊本県',ruby:'くまもとけん',capital:'熊本市',capRuby:'くまもとし',region:'九州',feature:'くまモンで有名、阿蘇山がある'},
+  {name:'大分県',ruby:'おおいたけん',capital:'大分市',capRuby:'おおいたし',region:'九州',feature:'温泉の数が日本一多い県'},
+  {name:'宮崎県',ruby:'みやざきけん',capital:'宮崎市',capRuby:'みやざきし',region:'九州',feature:'チキン南蛮が有名な食べ物'},
+  {name:'鹿児島県',ruby:'かごしまけん',capital:'鹿児島市',capRuby:'かごしまし',region:'九州',feature:'桜島が有名な活火山'},
+  {name:'沖縄県',ruby:'おきなわけん',capital:'那覇市',capRuby:'なはし',region:'沖縄',feature:'日本最南端の県、美しい海が有名'},
+];
+
+const REGIONS = [...new Set(PREFS.map(p => p.region))];
+
+// =============================================
+// クイズ生成
+// =============================================
+let quizData = [];
+let answered = 0;
+let correct  = 0;
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function makeQuestion(pref, type, format, idx) {
+  let qText = '', answer = '', ruby = '';
+
+  if (type === 'capital') {
+    qText = `<ruby>${pref.name}<rt>${pref.ruby}</rt></ruby>の<ruby>県庁所在地<rt>けんちょうしょざいち</rt></ruby>はどこですか？`;
+    answer = pref.capital;
+    ruby   = pref.capRuby;
+  } else if (type === 'region') {
+    qText = `<ruby>${pref.name}<rt>${pref.ruby}</rt></ruby>はどの<ruby>地方<rt>ちほう</rt></ruby>に<ruby>属<rt>ぞく</rt></ruby>していますか？`;
+    answer = pref.region + '地方';
+    ruby   = '';
+  } else if (type === 'feature') {
+    qText = `「${pref.feature}」といえばどこの<ruby>都道府県<rt>とどうふけん</rt></ruby>ですか？`;
+    answer = pref.name;
+    ruby   = pref.ruby;
+  } else { // pref name from capital
+    qText = `<ruby>県庁所在地<rt>けんちょうしょざいち</rt></ruby>が「<ruby>${pref.capital}<rt>${pref.capRuby}</rt></ruby>」の<ruby>都道府県<rt>とどうふけん</rt></ruby>はどこですか？`;
+    answer = pref.name;
+    ruby   = pref.ruby;
+  }
+
+  // 選択肢
+  let choices = [];
+  if (format === 'choice') {
+    const pool = PREFS.filter(p => p.name !== pref.name);
+    let distractors;
+    if (type === 'capital') {
+      distractors = shuffle(pool).slice(0, 3).map(p => p.capital);
+    } else if (type === 'region') {
+      const other = REGIONS.filter(r => r !== pref.region);
+      distractors = shuffle(other).slice(0, 3).map(r => r + '地方');
+    } else {
+      distractors = shuffle(pool).slice(0, 3).map(p => p.name);
+    }
+    choices = shuffle([answer, ...distractors]);
+  }
+
+  return { idx: idx + 1, qText, answer, ruby, format, choices, pref, type };
+}
+
+function generateQuiz() {
+  const count  = Math.min(47, Math.max(4, parseInt(document.getElementById('qcount').value) || 12));
+  const qtype  = document.getElementById('qtype').value;
+  const qfmt   = document.getElementById('qformat').value;
+
+  const types = qtype === 'mix'
+    ? ['capital','region','feature','capital']
+    : [qtype];
+
+  const pool = shuffle(PREFS).slice(0, count);
+
+  quizData = pool.map((pref, i) => {
+    const t = qtype === 'mix' ? types[i % types.length] : types[0];
+    const f = qfmt === 'mix' ? (i % 3 === 0 ? 'fill' : 'choice') : qfmt;
+    return makeQuestion(pref, t, f, i);
+  });
+
+  answered = 0;
+  correct  = 0;
+  document.getElementById('scoreBar').style.display = 'none';
+  renderScreen();
+  renderPrint();
+}
+
+// =============================================
+// 画面レンダリング
+// =============================================
+function typeLabel(t) {
+  return {capital:'県庁所在地',region:'地方',feature:'特徴'}[t] || t;
+}
+
+function renderScreen() {
+  const grid = document.getElementById('quizGrid');
+  grid.innerHTML = '';
+  quizData.forEach(q => {
+    const card = document.createElement('div');
+    card.className = 'quiz-card';
+    card.id = 'card' + q.idx;
+
+    let inner = `
+      <div class="q-number">Q${q.idx}</div>
+      <div class="q-type-badge">${typeLabel(q.type)}</div>
+      <div class="q-text">${q.qText}</div>
+    `;
+
+    if (q.format === 'choice') {
+      inner += `<div class="choices" id="choices${q.idx}">`;
+      q.choices.forEach((c, ci) => {
+        inner += `<button class="choice-btn" onclick="checkChoice(${q.idx},${ci},'${c.replace(/'/g,"\\'")}')">
+          ${c}
+        </button>`;
+      });
+      inner += `</div>`;
+    } else {
+      inner += `
+        <div class="fill-answer">
+          <div><ruby>答<rt>こた</rt></ruby>え：</div>
+          <input type="text" id="fill${q.idx}" placeholder="ここに入力...">
+          <br>
+          <button class="check-btn" onclick="checkFill(${q.idx})">✔ <ruby>確認<rt>かくにん</rt></ruby></button>
+          <div class="answer-msg" id="msg${q.idx}"></div>
+        </div>`;
+    }
+
+    card.innerHTML = inner;
+    grid.appendChild(card);
+  });
+}
+
+function checkChoice(qidx, ci, chosen) {
+  const q = quizData.find(x => x.idx === qidx);
+  if (!q || q.done) return;
+  q.done = true;
+  answered++;
+
+  const btns = document.querySelectorAll(`#choices${qidx} .choice-btn`);
+  btns.forEach(b => {
+    b.disabled = true;
+    if (b.textContent.trim() === q.answer.trim()) b.classList.add('reveal');
+  });
+  if (chosen === q.answer) {
+    btns[ci].classList.add('correct');
+    correct++;
+  } else {
+    btns[ci].classList.add('wrong');
+  }
+  updateScore();
+}
+
+function checkFill(qidx) {
+  const q = quizData.find(x => x.idx === qidx);
+  if (!q || q.done) return;
+  const val = document.getElementById('fill' + qidx).value.trim();
+  if (!val) return;
+  q.done = true;
+  answered++;
+
+  const msg = document.getElementById('msg' + qidx);
+  // 柔軟マッチ（都/府/県/市 省略OK）
+  const normalize = s => s.replace(/[都道府県市]/g,'').replace(/\s/g,'');
+  if (normalize(val) === normalize(q.answer)) {
+    msg.textContent = '⭕ 正解！';
+    msg.className = 'answer-msg ok';
+    correct++;
+  } else {
+    msg.innerHTML = `❌ <ruby>不正解<rt>ふせいかい</rt></ruby>。<ruby>答<rt>こた</rt></ruby>え：${q.ruby ? `<ruby>${q.answer}<rt>${q.ruby}</rt></ruby>` : q.answer}`;
+    msg.className = 'answer-msg ng';
+  }
+  document.getElementById('fill' + qidx).disabled = true;
+  updateScore();
+}
+
+function updateScore() {
+  const bar = document.getElementById('scoreBar');
+  bar.style.display = 'block';
+  bar.textContent = `${answered} / ${quizData.length} 問回答済み　｜　正解：${correct} 問`;
+  if (answered === quizData.length) {
+    bar.textContent += `　→　${correct}/${quizData.length}点！`;
+  }
+}
+
+// =============================================
+// 印刷レンダリング
+// =============================================
+function renderPrint() {
+  const area = document.getElementById('printArea');
+  area.innerHTML = '';
+  if (!quizData.length) return;
+
+  // 問題ページ（2列 × 3行 = 6問/ページ）
+  const perPage = 6;
+  const pages   = Math.ceil(quizData.length / perPage);
+
+  for (let p = 0; p < pages; p++) {
+    const page = document.createElement('div');
+    page.className = 'print-page';
+
+    const title = document.createElement('div');
+    title.className = 'print-title';
+    title.innerHTML = '<ruby>都道府県<rt>とどうふけん</rt></ruby>クイズ';
+    page.appendChild(title);
+
+    const meta = document.createElement('div');
+    meta.className = 'print-meta';
+    meta.innerHTML = `
+      <span><ruby>名前<rt>なまえ</rt></ruby>：<span class="name-box">　　　　　　　</span></span>
+      <span>${p + 1} / ${pages} ページ</span>
+    `;
+    page.appendChild(meta);
+
+    const grid = document.createElement('div');
+    grid.className = 'print-grid';
+
+    const slice = quizData.slice(p * perPage, (p + 1) * perPage);
+    slice.forEach(q => {
+      const card = document.createElement('div');
+      card.className = 'print-card';
+
+      let html = `
+        <div class="pq-header">
+          <span class="pq-num">Q${q.idx}</span>
+          <span class="pq-type">${typeLabel(q.type)}</span>
+        </div>
+        <div class="pq-text">${q.qText}</div>
+      `;
+
+      if (q.format === 'choice') {
+        html += `<div class="pq-choices">`;
+        q.choices.forEach((c, i) => {
+          const marks = ['ア','イ','ウ','エ'];
+          html += `<div class="pq-choice">${marks[i]}．${c}</div>`;
+        });
+        html += `</div>`;
+      } else {
+        html += `<div class="pq-fill-line"></div>`;
+      }
+
+      card.innerHTML = html;
+      grid.appendChild(card);
+    });
+
+    page.appendChild(grid);
+    area.appendChild(page);
+  }
+
+  // 答え合わせページ
+  const ansPage = document.createElement('div');
+  ansPage.className = 'print-page answer-page';
+
+  const ansTitle = document.createElement('div');
+  ansTitle.className = 'print-title';
+  ansTitle.innerHTML = '<ruby>答え合わせ<rt>こたえあわせ</rt></ruby>';
+  ansPage.appendChild(ansTitle);
+
+  const ansMeta = document.createElement('div');
+  ansMeta.className = 'print-meta';
+  ansMeta.innerHTML = `<span></span><span><ruby>答え合わせ<rt>こたえあわせ</rt></ruby>ページ</span>`;
+  ansPage.appendChild(ansMeta);
+
+  const ansGrid = document.createElement('div');
+  ansGrid.className = 'print-grid';
+
+  // 答えを2列でまとめて
+  for (let i = 0; i < quizData.length; i += 2) {
+    [quizData[i], quizData[i+1]].filter(Boolean).forEach(q => {
+      const card = document.createElement('div');
+      card.className = 'print-card';
+      let ansHtml = `
+        <div class="pq-header">
+          <span class="pq-num">Q${q.idx}</span>
+          <span class="pq-type">${typeLabel(q.type)}</span>
+        </div>
+        <div class="pq-text" style="font-size:9pt">${q.qText}</div>
+        <div class="pq-answer-label"><ruby>答え<rt>こたえ</rt></ruby>：</div>
+        <div class="pq-answer">${q.ruby ? `<ruby>${q.answer}<rt>${q.ruby}</rt></ruby>` : q.answer}</div>
+      `;
+      if (q.format === 'choice') {
+        const marks = ['ア','イ','ウ','エ'];
+        const idx = q.choices.indexOf(q.answer);
+        ansHtml += `<div style="font-size:8pt;color:#555">${marks[idx]}．${q.answer}</div>`;
+      }
+      card.innerHTML = ansHtml;
+      ansGrid.appendChild(card);
+    });
+  }
+
+  ansPage.appendChild(ansGrid);
+  area.appendChild(ansPage);
+}
+
+// 初期生成
+generateQuiz();
+</script>
+</body>
+</html>
