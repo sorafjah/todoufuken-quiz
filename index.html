@@ -344,7 +344,6 @@
       <select id="qtype">
         <option value="mix">まぜこぜ</option>
         <option value="capital">県庁所在地</option>
-        <option value="region">地方</option>
         <option value="feature">特徴</option>
 
       </select>
@@ -486,7 +485,7 @@ function generateQuiz() {
   const qfmt   = document.getElementById('qformat').value;
 
   const types = qtype === 'mix'
-    ? ['capital','region','feature','capital']
+    ? ['capital','feature','capital','feature']
     : [qtype];
 
   const pool = shuffle(PREFS).slice(0, count);
